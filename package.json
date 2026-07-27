@@ -1,0 +1,16 @@
+{
+  "name": "backendproject",
+  "version": "1.0.0",
+  "description": "learning backend from chai aur code",
+  "keywords": [
+    "backend",
+    "javascript"
+  ],
+  "license": "ISC",
+  "author": "Daniyal Afzaal",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
