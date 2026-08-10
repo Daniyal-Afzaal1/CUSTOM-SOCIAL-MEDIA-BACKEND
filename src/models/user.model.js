@@ -62,24 +62,24 @@ userSchema.methods.isPasswordCorrect = async function(password){
 }
 
 userSchema.methods.generateAccessToken = function(){
-    return jwt.sign(
+    return jwt.sign(                               //method to create token
         {
-            _id: this.id,
+            _id: this.id,                          //payload
             email: this.email,
             username: this.username,
             fullName: this.fullName
         },
-        process.env.ACCESS_TOKEN_SECRET,
+        process.env.ACCESS_TOKEN_SECRET,                      //secret+payload = signature
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY         //how long token will remain valid
         }
     )
 }
 
-userSchema.methods.generateRefeshToken = function(){
+userSchema.methods.generateRefeshToken = function(){  //both refresh and access token are sent to client, one is used for normal requests, other is used for renewal of a access token
     return jwt.sign(
         {
-            _id: this.id,
+            _id: this._id,
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
