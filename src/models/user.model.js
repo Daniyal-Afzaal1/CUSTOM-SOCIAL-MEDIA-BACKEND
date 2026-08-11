@@ -76,7 +76,7 @@ userSchema.methods.generateAccessToken = function(){
     )
 }
 
-userSchema.methods.generateRefeshToken = function(){  //both refresh and access token are sent to client, one is used for normal requests, other is used for renewal of a access token
+userSchema.methods.generateRefreshToken = function(){  //both refresh and access token are sent to client, one is used for normal requests, other is used for renewal of a access token
     return jwt.sign(
         {
             _id: this._id,
