@@ -14,4 +14,9 @@ app.use(express.urlencoded({extended : true, limit: "16kb"}))  // Parse nested f
 app.use(express.static("public"))  // Serve static files from the public folder, if frontend requests it gives
 app.use(cookieParser()) // Parse cookies and make them available through req.cookies
 
+//routes : we write the routes after cuz controllers may need the middle wares processed data like json to work with
+import userRouter from "./routes/user.routes.js"
+app.use("/api/v1/users",userRouter);            //base route for userRouters
+
+
 export {app}
