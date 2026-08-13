@@ -50,11 +50,11 @@ const userSchema = new mongoose.Schema({
 
 userSchema.pre("save", async function (next){    //pre middleware: hashes before saving passowrd 
     if(!this.isModified("password")){       //it make sure only when password field is added 
-        return next();                      //newly or is modified then save else if it is 
+        return ;                      //newly or is modified then save else if it is 
     }                                        //saving for another thing just move on}
     
     this.password = await bcrypt.hash(this.password, 10);
-    next();
+    //removed next() because now in new verisons there is no need when using async/await promises, it moves on to next middleware on its own
 })
 
 userSchema.methods.isPasswordCorrect = async function(password){

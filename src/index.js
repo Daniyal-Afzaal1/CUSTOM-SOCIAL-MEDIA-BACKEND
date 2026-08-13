@@ -1,11 +1,11 @@
 // require('dotenv').config({path: './env'})
-import dotenv from "dotenv"
+// import dotenv from "dotenv"          i commented it as there is no more need of it as imported modules are loaded first before loading .env into process.env so i load them in dev command before loading imported modules as i was having error making cloudinary config variables undefined
 import connectDB from "./db/index.js";
 import { app } from "./app.js";
 
-dotenv.config({      // Load environment variables from the .env file into process.env
-    path: './.env'
-})
+// dotenv.config({      // Load environment variables from the .env file into process.env
+//     path: './.env'
+// })
 
 const PORT = process.env.PORT || 8000;
 
