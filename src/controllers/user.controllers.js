@@ -4,11 +4,18 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import fs from "fs";
 
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, password, fullName } = req.body;
     const data = [username, email, password, fullName];
     const fields = ["username", "email", "password", "fullName"]
+
+
+    const avatarLocalPath = req.files?.avatar?.[0]?.path;
+    const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+
+    // console.log(req.body);
 
     for (let i = 0; i < data.length; i++) {
         if (isEmpty(data[i])) {
@@ -22,17 +29,29 @@ const registerUser = asyncHandler(async (req, res) => {
     }
 
     const usernameExists = await User.findOne({ username });  //conflicts error = 409
+    const emailExists = await User.findOne({ email });
+
+    if(usernameExists && emailExists){
+        fs.unlinkSync(avatarLocalPath);  //if conflict, remove the resources from local server
+        fs.unlinkSync(coverImageLocalPath);
+        throw new ApiError(409,"Email and username, both are already taken");
+         
+    }
+
     if (usernameExists) {
         throw new ApiError(409, "username already exists");
+        fs.unlinkSync(avatarLocalPath);
+        fs.unlinkSync(coverImageLocalPath);
     }
 
-    const emailExists = await User.findOne({ email });
     if (emailExists) {
         throw new ApiError(409, "email already exists");
+        fs.unlinkSync(avatarLocalPath);
+        fs.unlinkSync(coverImageLocalPath);
     }
 
-    const avatarLocalPath = req.files?.avatar?.[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+    // console.log(req.files);
+ 
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Error while uploading avatar");
@@ -92,3 +111,6 @@ export { registerUser }
      9. Verify user creation
      10. Send a structured response
     */
+
+     //i think i can do something like because the images are upladed on local machine in the router so if 
+     //error occurs inside the username and email conflict it means the images are still on local and they need to be deleted
