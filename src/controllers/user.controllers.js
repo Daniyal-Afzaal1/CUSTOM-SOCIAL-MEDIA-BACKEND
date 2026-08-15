@@ -140,9 +140,9 @@ const registerUser = asyncHandler(async (req, res) => {
      //login
      const LoginUser = asyncHandler(async (req,res) => {
         const {username,email,password} = req.body;
-
-        if(!(username && email)){
-            throw new ApiError("Username or email is required");
+        
+        if(!username && !email){
+            throw new ApiError(400,"Username or email is required");
         }
 
         const user = await User.findOne({
@@ -150,7 +150,7 @@ const registerUser = asyncHandler(async (req, res) => {
                 {username},
                 {email}
             ]
-        }).select("-password -refreshToken");
+        });
 
         if(!user){
             throw new ApiError(404, "User does not exists");
@@ -169,6 +169,8 @@ const registerUser = asyncHandler(async (req, res) => {
             secure: true  //browser should send cookies over HTTPS 
         };
 
+        const userToSend = await User.findOne(user._id).select("-password -refreshToken");
+
         res
         .status(200)
         .cookie("accessToken", accessToken, options)
@@ -177,7 +179,7 @@ const registerUser = asyncHandler(async (req, res) => {
             new ApiResponse(
                 200,
                 {
-                    user,               //front end might need email,avatar or username
+                    userToSend,               //front end might need email,avatar or username
                     accessToken,
                     refreshToken
                 },
