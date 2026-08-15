@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken"
 
 const verifyJWT = asyncHandler(async(req,_,next) => {
     const token = req.cookies?.accessToken || 
-    req.header("Authorization")?.replace("Bearer", "");
+    req.header("Authorization")?.replace("Bearer ", "");
 
     if(!token){
         throw new ApiError(401, "Unauthorized request");       //401: the server rejected your request because it lacks valid authentication credentials
@@ -24,7 +24,7 @@ const verifyJWT = asyncHandler(async(req,_,next) => {
     instead of your custom ApiError
     */
 
-    const user = await User.findOne(decodedToken._id).select("-password -refreshToken");
+    const user = await User.findById(decodedToken._id).select("-password -refreshToken");
 
     if(!user){
         throw new ApiError(401,"Invalid access token");
