@@ -6,6 +6,29 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import fs from "fs";
 
+const generate_Access_And_Refresh_Token = async(userID) => {
+
+    try {
+        const user = await User.findById(userID);
+    
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+    
+        user.refreshToken = refreshToken;
+    
+        await user.save({
+            validateBeforeSave: false  //Mongoose will not check if required fields are missing or if data types are wrong
+        })
+    
+        return {accessToken, refreshToken}
+
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating access and refresh Tokens");
+    }
+
+}
+
+//registerUser
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, password, fullName } = req.body;
     const data = [username, email, password, fullName];
@@ -98,7 +121,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser }
 /*
      1. Receive user data
      2. Validate the data
@@ -114,3 +136,89 @@ export { registerUser }
 
      //i think i can do something like because the images are upladed on local machine in the router so if 
      //error occurs inside the username and email conflict it means the images are still on local and they need to be deleted
+
+     //login
+     const LoginUser = asyncHandler(async (req,res) => {
+        const {username,email,password} = req.body;
+
+        if(!(username && email)){
+            throw new ApiError("Username or email is required");
+        }
+
+        const user = await User.findOne({
+            $or : [
+                {username},
+                {email}
+            ]
+        }).select("-password -refreshToken");
+
+        if(!user){
+            throw new ApiError(404, "User does not exists");
+        }
+
+        const isPasswordValid = await user.isPasswordCorrect(password);
+
+        if(!isPasswordValid){
+            throw new ApiError(401,"Invalid User credentials") //401: it lacks valid authentication credentials
+        }
+
+        const {accessToken,refreshToken} = await generate_Access_And_Refresh_Token(user._id);
+
+        const options = {
+            httpOnly: true,  //JavaScript cookie access restriction at client side(browser)
+            secure: true  //browser should send cookies over HTTPS 
+        };
+
+        res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    user,               //front end might need email,avatar or username
+                    accessToken,
+                    refreshToken
+                },
+                "User loggedIn successfully"
+            )
+        );
+
+     });
+
+     //logout
+     const LogoutUser = asyncHandler(async (req,res) => {
+        await User.findByIdAndUpdate(req.user._id,
+            {
+                $set: { //set operator
+                    refreshToken: undefined
+                }
+            },
+            {
+                new: true
+            }
+        )
+
+        const options = {
+            httpOnly: true,
+            secure: true
+        };
+
+        res
+        .status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "user logout successfully"
+            )
+        );
+
+
+     });
+
+    
+     export { registerUser, LoginUser, LogoutUser }
