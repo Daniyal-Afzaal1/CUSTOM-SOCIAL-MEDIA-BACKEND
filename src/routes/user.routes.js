@@ -1,9 +1,10 @@
 import { Router } from "express"; //if we write in {}, then we have to write the exact name exported
-import { registerUser } from "../controllers/user.controllers.js";
+import { LoginUser, LogoutUser, registerUser } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
 
-router.route("/register").post(
+router.route("/register").post( //register
     upload.fields([
         {
             name : "avatar",
@@ -16,5 +17,9 @@ router.route("/register").post(
     ]),
     registerUser
 );
+
+router.route("/login").post(LoginUser);  //login
+
+router.route("/logout").post(verifyJWT, LogoutUser); //logout
 
 export default router; //with default in export, in import we can give it any name we want
