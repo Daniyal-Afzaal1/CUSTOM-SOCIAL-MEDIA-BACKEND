@@ -254,7 +254,7 @@ const registerUser = asyncHandler(async (req, res) => {
             secure : true
         };
 
-        res
+        return res
         .status(200)
         .cookies("accessToken",accessToken,options)
         .cookies("refreshToken",refreshToken,options)
@@ -268,4 +268,4 @@ const registerUser = asyncHandler(async (req, res) => {
      })
 
     
-     export { registerUser, LoginUser, LogoutUser, refreshAccessToken }
+     export { registerUser, LoginUser, LogoutUser, refreshAccessToken };
