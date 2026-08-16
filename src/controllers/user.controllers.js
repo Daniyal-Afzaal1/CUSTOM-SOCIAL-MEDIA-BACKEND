@@ -5,6 +5,7 @@ import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import fs from "fs";
+import jwt from "jsonwebtoken"
 
 const generate_Access_And_Refresh_Token = async(userID) => {
 
@@ -38,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.files?.avatar?.[0]?.path;
     const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
 
-    // console.log(req.body);
+    // console.log(req.body);    
 
     for (let i = 0; i < data.length; i++) {
         if (isEmpty(data[i])) {
@@ -222,5 +223,49 @@ const registerUser = asyncHandler(async (req, res) => {
 
      });
 
+     //refresh the access token
+     const refreshAccessToken = asyncHandler(async (req, res) => {
+        const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
+        if(!incomingRefreshToken){
+            throw new ApiError(401,"Unauthorized request"); 
+        }
+
+        try {
+            const decoded_token = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+        } catch (error) {
+            throw new ApiError(401, error?.message || "Invalid Refresh token");
+        }
+
+        const user = await User.findById(decoded_token?._id);
+
+        if(!user){
+            throw new ApiError(401, "Invalid Refresh token");
+        }
+
+        if(incomingRefreshToken !== user?.refreshToken){
+            throw new ApiError(401,"Invalid refresh token");
+        }
+
+        const {accessToken,refreshToken} = await generate_Access_And_Refresh_Token(user._id);
+
+        const options = {
+            httpOnly : true,
+            secure : true
+        };
+
+        res
+        .status(200)
+        .cookies("accessToken",accessToken,options)
+        .cookies("refreshToken",refreshToken,options)
+        .json(
+            new ApiResponse(200,
+                {accessToken, refreshToken},
+                "access token refreshed"
+            )
+        )
+
+     })
+
     
-     export { registerUser, LoginUser, LogoutUser }
+     export { registerUser, LoginUser, LogoutUser, refreshAccessToken }
