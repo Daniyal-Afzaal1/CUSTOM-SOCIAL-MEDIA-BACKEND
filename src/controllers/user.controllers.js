@@ -278,7 +278,7 @@ const change_current_password = asyncHandler(async (req, res) => {
 
     const user = await findById(req.user._id);
 
-    const isPasswordValid = user.isPasswordCorrect(old_password);
+    const isPasswordValid = await user.isPasswordCorrect(old_password);
 
     if (!isPasswordValid) {
         throw new ApiError(400, "old password you have given is incorrect");
@@ -297,7 +297,7 @@ const change_current_password = asyncHandler(async (req, res) => {
 
 //get current user
 const getCurrentUser = asyncHandler(async (req, res) => {
-    return req
+    return res
         .status(200)
         .json(
             new ApiResponse(200, req.user, "successfully retreived current user")
