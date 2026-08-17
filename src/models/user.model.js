@@ -35,8 +35,16 @@ const userSchema = new mongoose.Schema({
         type: String,   //cloudinary url
         required: true
     },
+    avatar_public_id : { //used for deleting purposes
+        type: String,   
+        required: true
+    },
     coverImage: {
         type: String,
+    },
+    coverImage_public_id : { //used for deleting purposes
+        type: String,   
+        required: true
     },
     password:{
         type: String,

@@ -6,8 +6,16 @@ const videoModel = new mongoose.Schema({
         type: String,      //cloudinary url
         required: true
     },
+    videoFile_publicID :{
+        type: String,      //used for deleting purposes
+        required: true
+    },
     thumbnail:{
         type: String,      //cloudinary url
+        required: true
+    },
+    thumbnail_publicID :{
+        type: String,      //used for deleting purposes
         required: true
     },
     owner:{
