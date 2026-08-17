@@ -352,8 +352,8 @@ const update_avatar = asyncHandler(async (req, res) => {
 
     const new_avatar = await uploadOnCloudinary(avatarLocalPath);
 
-    if(!new_avatar){
-        throw new ApiError(500,"Error while uploading avatar");
+    if (!new_avatar) {
+        throw new ApiError(500, "Error while uploading avatar");
     }
 
     const user_with_old_avatar = await User.findById(req.user._id);
@@ -366,21 +366,21 @@ const update_avatar = asyncHandler(async (req, res) => {
                 avatar_public_id: new_avatar.public_id
             }
         },
-        {new: true}
+        { new: true }
     ).select("-password");
 
-    if(!user){
+    if (!user) {
         delete_from_cloudinary(new_avatar.public_id);
-        throw new ApiError(500,"Error while updating avatar");        
+        throw new ApiError(500, "Error while updating avatar");
     }
 
     delete_from_cloudinary(user_with_old_avatar.public_id);
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(200, user, "Avatar uploaded successfully")
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, user, "Avatar uploaded successfully")
+        )
 
 });
 
@@ -394,8 +394,8 @@ const update_coverImage = asyncHandler(async (req, res) => {
 
     const new_coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-    if(!new_coverImage){
-        throw new ApiError(500,"Error while uploading cover image");
+    if (!new_coverImage) {
+        throw new ApiError(500, "Error while uploading cover image");
     }
 
     const user_with_old_coverImg = await User.findById(req.user._id);
@@ -408,25 +408,94 @@ const update_coverImage = asyncHandler(async (req, res) => {
                 coverImage_public_id: new_coverImage.public_id
             }
         },
-        {new: true}
+        { new: true }
     ).select("-password");
 
-    if(!user){
+    if (!user) {
         delete_from_cloudinary(new_coverImage.public_id);
-        throw new ApiError(500,"Error while updating avatar");        
+        throw new ApiError(500, "Error while updating avatar");
     }
 
     delete_from_cloudinary(user_with_old_coverImg.public_id);
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(200, user, "cover image uploaded successfully")
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, user, "cover image uploaded successfully")
+        )
 
 });
 
+const get_user_channel_profile = asyncHandler(async (req, res) => {
+    const { username } = req.params;
 
+    if (!username?.trim()) {
+        throw new ApiError(401, "username is missing");
+    }
+
+    const channel = await User.aggregate([ //return [{},{},{}]
+        {
+            $match: {   //mactch: i need to find something
+                username: usernmae?.toLowerCase()
+            }
+        },
+        {
+            $lookup: { //lookup:i need info from another collection, returns [{},{},{}]
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: { //addFields: i need to create/calculate something
+                subscriberCount: {
+                    $size: $subscribers //Count items in an array
+                },
+                channelsSubscribedToCount: {
+                    $size: $subscribedTo
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },  //in: Check whether something exists
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: { //project: Select/remove fields
+                fullName: 1,
+                username: 1,
+                avatar: 1,
+                coverImage: 1,
+                subscriberCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1,
+                email: 1
+            }
+        }
+    ]);
+
+    if(!channel?.length){
+        throw new ApiError(404, "channel does not exists");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200,channel[0], "User channel fetched successfully")
+    )
+})
 
 export {
     registerUser,
