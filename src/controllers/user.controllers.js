@@ -202,7 +202,7 @@ const LogoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id,
         {
             $set: { //set operator
-                refreshToken: undefined
+                refreshToken: null
             }
         },
         {
@@ -238,8 +238,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Unauthorized request");
     }
 
+    let decoded_token;
     try {
-        const decoded_token = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+        decoded_token = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid Refresh token");
     }
@@ -263,8 +264,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookies("accessToken", accessToken, options)
-        .cookies("refreshToken", refreshToken, options)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
             new ApiResponse(200,
                 { accessToken, refreshToken },
@@ -282,7 +283,7 @@ const change_current_password = asyncHandler(async (req, res) => {
         throw new ApiError(401, "passwords are required");
     }
 
-    const user = await findById(req.user._id);
+    const user = await User.findById(req.user?._id);
 
     const isPasswordValid = await user.isPasswordCorrect(old_password);
 
@@ -291,7 +292,7 @@ const change_current_password = asyncHandler(async (req, res) => {
     }
 
     user.password = new_password;
-    await user.save({ validateBeforeSave: false });
+
 
     return res
         .status(200)
@@ -438,8 +439,8 @@ const get_user_channel_profile = asyncHandler(async (req, res) => {
 
     const channel = await User.aggregate([ //return [{},{},{}]
         {
-            $match: {   //mactch: i need to find something
-                username: usernmae?.toLowerCase()
+            $match: {   //match: i need to find something
+                username: username?.toLowerCase()
             }
         },
         {
@@ -461,10 +462,10 @@ const get_user_channel_profile = asyncHandler(async (req, res) => {
         {
             $addFields: { //addFields: i need to create/calculate something
                 subscriberCount: {
-                    $size: $subscribers //Count items in an array
+                    $size: "$subscribers" //Count items in an array
                 },
                 channelsSubscribedToCount: {
-                    $size: $subscribedTo
+                    $size: "$subscribedTo"
                 },
                 isSubscribed: {
                     $cond: {
@@ -568,3 +569,5 @@ export {
     get_user_channel_profile,
     get_watch_history
 };
+
+//testing of user model and have to write all the models today
