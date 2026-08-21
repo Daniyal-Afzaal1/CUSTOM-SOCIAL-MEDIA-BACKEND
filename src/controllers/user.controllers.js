@@ -47,11 +47,16 @@ const registerUser = asyncHandler(async (req, res) => {
     for (let i = 0; i < data.length; i++) {
         if (isEmpty(data[i])) {
             throw new ApiError(400, `${fields[i]} cannot be empty`);
-            break;
         }
     }
 
     if (!isEmailCorrect(email)) {
+        if (avatarLocalPath) {
+            fs.unlinkSync(avatarLocalPath);
+        }
+        if (coverImageLocalPath) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
         throw new ApiError(400, "Provide correct email");
     }
 
@@ -59,34 +64,62 @@ const registerUser = asyncHandler(async (req, res) => {
     const emailExists = await User.findOne({ email });
 
     if (usernameExists && emailExists) {
-        fs.unlinkSync(avatarLocalPath);  //if conflict, remove the resources from local server
-        fs.unlinkSync(coverImageLocalPath);
-        throw new ApiError(409, "Email and username, both are already taken");
 
+        if (avatarLocalPath) {
+            fs.unlinkSync(avatarLocalPath);
+        }
+        if (coverImageLocalPath) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
+
+        throw new ApiError(409, "Email and username, both are already taken");
     }
 
     if (usernameExists) {
+        if (avatarLocalPath) {
+            fs.unlinkSync(avatarLocalPath);
+        }
+        if (coverImageLocalPath) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
+
         throw new ApiError(409, "username already exists");
-        fs.unlinkSync(avatarLocalPath);
-        fs.unlinkSync(coverImageLocalPath);
+
     }
 
     if (emailExists) {
+        if (avatarLocalPath) {
+            fs.unlinkSync(avatarLocalPath);
+        }
+        if (coverImageLocalPath) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
+
         throw new ApiError(409, "email already exists");
-        fs.unlinkSync(avatarLocalPath);
-        fs.unlinkSync(coverImageLocalPath);
+
     }
 
     // console.log(req.files);
 
 
     if (!avatarLocalPath) {
+        if (coverImageLocalPath) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
         throw new ApiError(400, "Error while uploading avatar");
     }
 
     const avatarResponse = await uploadOnCloudinary(avatarLocalPath);
 
     if (!avatarResponse) {
+        
+        if (avatarLocalPath) {
+            fs.unlinkSync(avatarLocalPath);
+        }
+        if (coverImageLocalPath) {
+            fs.unlinkSync(coverImageLocalPath);
+        }
+
         throw new ApiError(500, "Error while uploading avatar");
     }
 
@@ -116,8 +149,8 @@ const registerUser = asyncHandler(async (req, res) => {
     )
 
     if (!createdUser) {
-        delete_from_cloudinary(avatarResponse?.public_id);
-        delete_from_cloudinary(coverImageResponse?.public_id);
+        await delete_from_cloudinary(avatarResponse?.public_id);
+        await delete_from_cloudinary(coverImageResponse?.public_id);
         throw new ApiError(500, "Error while registering the user");
     }
 
@@ -490,50 +523,50 @@ const get_user_channel_profile = asyncHandler(async (req, res) => {
         }
     ]);
 
-    if(!channel?.length){
+    if (!channel?.length) {
         throw new ApiError(404, "channel does not exists");
     }
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(200,channel[0], "User channel fetched successfully")
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, channel[0], "User channel fetched successfully")
+        )
 })
 
 //get watch history
 const get_watch_history = asyncHandler(async (req, res) => {
     const user = await User.aggregate([
         {
-            $match : {
-                _id : new mongoose.Types.ObjectId(req.user?._id)
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user?._id)
             }
         },
         {
-            $lookup : {
-                from : "videos",
-                localField : "watchHistory",
-                foreignField : "_id",
-                as : "watchHistory",
-                pipeline : [
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline: [
                     {
-                        $lookup : {
-                            from : "users",
-                            localField : "owner",
-                            foreignField : "_id",
-                            as : "owner",
-                            pipeline : [
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
                                 {
-                                    $project : {
-                                        avatar : 1,
-                                        username : 1,
-                                        fullName : 1
+                                    $project: {
+                                        avatar: 1,
+                                        username: 1,
+                                        fullName: 1
                                     }
                                 },
                                 {
-                                    $addFields : { //to gove this format : owner : {...}
-                                        owner : {
-                                            $first : "$owner"
+                                    $addFields: { //to gove this format : owner : {...}
+                                        owner: {
+                                            $first: "$owner"
                                         }
                                     }
                                 }
@@ -546,14 +579,14 @@ const get_watch_history = asyncHandler(async (req, res) => {
     ])
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(
-            200,
-            user[0]?.watchHistory,
-            "watch history fetched successfully"
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user[0]?.watchHistory,
+                "watch history fetched successfully"
+            )
         )
-    )
 })
 
 export {
