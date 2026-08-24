@@ -1,1 +1,2 @@
-# backend 
+# CUSTOM SOCIAL MEDIA BACKEND
+# (Youtube + Twitter)
