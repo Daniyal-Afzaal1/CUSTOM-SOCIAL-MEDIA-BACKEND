@@ -223,6 +223,16 @@ const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { title, description } = req.body;
 
+    const isValidUser = await findById(videoId);
+
+    if (!isValidUser) {
+        throw new ApiError(400, "Error while updating");
+    }
+
+    if (!req.user._id.equals(isValidUser.owner)) {
+        throw new ApiError(400, "Unauthorized Request")
+    }
+
     if (!title) {
         throw new ApiError(400, "error receiving title")
     }
@@ -278,6 +288,16 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+
+    const isValidUser = await findById(videoId);
+
+    if (!isValidUser) {
+        throw new ApiError(400, "Error while deleting");
+    }
+
+    if (!req.user._id.equals(isValidUser.owner)) {
+        throw new ApiError(400, "Unauthorized Request")
+    }
 
     const video = await Video.findByIdAndDelete(videoId);
 

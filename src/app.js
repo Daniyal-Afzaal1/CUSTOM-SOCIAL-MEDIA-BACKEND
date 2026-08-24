@@ -18,5 +18,9 @@ app.use(cookieParser()) // Parse cookies and make them available through req.coo
 import userRouter from "./routes/user.routes.js"
 app.use("/api/v1/users",userRouter);            //base route for userRouters
 
+//video router
+import videoRouter from "./routes/video.routes.js"
+app.use("api/v1/video",videoRouter)
+
 
 export {app}
