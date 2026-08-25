@@ -38,5 +38,9 @@ app.use("/api/v1/playlist",playlistRouter);
 import likeRouter from "./routes/like.routes.js"
 app.use("/api/v1/like", likeRouter)
 
+//healthcheck router
+import healthcheckRouter from "./routes/healthcheck.routes.js";
+app.use("/api/v1/healthcheck",healthcheckRouter);
+
 
 export {app}
