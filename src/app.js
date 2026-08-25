@@ -46,5 +46,9 @@ app.use("/api/v1/healthcheck",healthcheckRouter);
 import dashboardRouter from "./routes/dashboard.routes.js";
 app.use("/api/v1/dashboard",dashboardRouter);
 
+//comment router
+import commentRouter from "./routes/comment.routes.js";
+app.use("/api/v1/comment",commentRouter);
+
 
 export {app}
