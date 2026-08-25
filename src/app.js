@@ -42,5 +42,9 @@ app.use("/api/v1/like", likeRouter)
 import healthcheckRouter from "./routes/healthcheck.routes.js";
 app.use("/api/v1/healthcheck",healthcheckRouter);
 
+//dashboard router
+import dashboardRouter from "./routes/dashboard.routes.js";
+app.use("/api/v1/dashboard",dashboardRouter);
+
 
 export {app}
