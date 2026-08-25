@@ -20,15 +20,21 @@ app.use("/api/v1/users",userRouter);            //base route for userRouters
 
 //video router
 import videoRouter from "./routes/video.routes.js"
-app.use("api/v1/video",videoRouter)
+app.use("/api/v1/video",videoRouter)
 
 //tweet router
 import tweetRouter from "./routes/tweet.routes.js"
-app.use("api/v1/tweet",tweetRouter)
+app.use("/api/v1/tweet",tweetRouter)
 
 //subscription router
 import subscriptionRouter from "./routes/subscription.routes.js";
-app.use("api/v1/subscription",subscriptionRouter)
+app.use("/api/v1/subscription",subscriptionRouter)
+
+//playlist router
+import playlistRouter from "./routes/playlist.routes.js";
+app.use("/api/v1/playlist",playlistRouter);
+
+
 
 
 export {app}
