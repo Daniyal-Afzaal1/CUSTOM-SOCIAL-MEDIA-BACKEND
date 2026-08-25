@@ -202,7 +202,11 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 //get video by id
 const getVideoById = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
+    const { videoId } = req.params;
+
+    if (!videoId.trim() || !mongoose.Types.ObjectId.isValid(videoId)) {
+        throw new ApiError(400, "Invalid video id")
+    }
 
     const video = await Video.findById(videoId);
 
@@ -223,7 +227,7 @@ const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { title, description } = req.body;
 
-    const isValidUser = await findById(videoId);
+    const isValidUser = await Video.findById(videoId);
 
     if (!isValidUser) {
         throw new ApiError(400, "Error while updating");
@@ -289,7 +293,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
 
-    const isValidUser = await findById(videoId);
+    const isValidUser = await Video.findById(videoId);
 
     if (!isValidUser) {
         throw new ApiError(400, "Error while deleting");
@@ -305,18 +309,26 @@ const deleteVideo = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Error while deleting")
     }
 
-    const video_response = await delete_from_cloudinary(video.videoFile_publicID);
+    const video_response = await delete_from_cloudinary(video.videoFile_publicID, "video");
 
-    if (!video_response) {
-        console.log("Video needs manual deletion:", video.videoFile_publicID); // we can also make a seperate mongoDB collection to store the documents of failed deletion so they can be done afterwards
-        throw new ApiError(500, "Error while deleting video, ${video_publicID}")
+    if (video_response?.result !== "ok") {
+        console.log("Video needs manual deletion:",video.videoFile_publicID);
+
+        throw new ApiError(
+            500,
+            `Error while deleting video: ${video.videoFile_publicID}`
+        );
     }
 
-    const thumbnail_response = await delete_from_cloudinary(video.thumbnail_publicID);
+    const thumbnail_response = await delete_from_cloudinary(video.thumbnail_publicID, "image");
 
-    if (!thumbnail_response) {
-        console.log("thumbnail needs manual deletion:", video.thumbnail_publicID);
-        throw new ApiError(500, "Error while deleting thumbnail");
+    if (thumbnail_response?.result !== "ok") {
+        console.log("Thumbnail needs manual deletion:",video.thumbnail_publicID);
+
+        throw new ApiError(
+            500,
+            `Error while deleting thumbnail: ${video.thumbnail_publicID}`
+        );
     }
 
     return res
@@ -331,7 +343,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { isPublished } = req.body;
 
-    const video = await findByIdAndUpdate(videoId,
+    const video = await Video.findByIdAndUpdate(videoId,
         {
             $set: {
                 isPublished: isPublished
