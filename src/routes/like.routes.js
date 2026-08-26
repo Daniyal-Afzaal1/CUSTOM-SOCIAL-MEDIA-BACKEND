@@ -18,4 +18,4 @@ router.route("/tweet/:tweetId").post(verifyJWT,toggleTweetLike);
 router.route("/liked/videos").get(verifyJWT,getLikedVideos);
 
 
-export default router;
+export default router; 

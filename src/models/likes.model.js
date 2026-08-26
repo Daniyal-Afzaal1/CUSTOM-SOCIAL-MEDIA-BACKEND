@@ -86,4 +86,4 @@ likesSchema.index(
     }
 );
 
-export const Like = mongoose.model("Like", likesSchema);
+export const Like = mongoose.model("Like", likesSchema); 

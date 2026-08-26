@@ -79,7 +79,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
         }
     ])
 
-    ChannelStats.totalSubscribers = subscribersList[0].totalSubscribers || 0;
+    ChannelStats.totalSubscribers = subscribersList[0]?.totalSubscribers || 0;
 
     return res
         .status(200)
