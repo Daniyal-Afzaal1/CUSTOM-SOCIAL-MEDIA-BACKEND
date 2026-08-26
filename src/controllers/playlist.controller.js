@@ -85,7 +85,16 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                             from: "users",
                             localField: "owner",
                             foreignField: "_id",
-                            as: "channel"
+                            as: "channel",
+                            pipeline: [
+                                {
+                                    $project : {
+                                        username : 1,
+                                        fullName : 1,
+                                        avatar : 1
+                                    }
+                                }
+                            ]
                         }
                     },
                     {
