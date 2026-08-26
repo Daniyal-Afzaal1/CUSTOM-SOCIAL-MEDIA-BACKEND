@@ -43,7 +43,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
     const playlists = await Playlist.aggregate([
         {
             $match: {
-                owner: mongoose.Types.ObjectId(userId)
+                owner: new mongoose.Types.ObjectId(userId)
             }
         }
     ])
@@ -70,7 +70,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     const playlist = await Playlist.aggregate([
         {
             $match: {
-                _id: mongoose.Types.ObjectId(playlistId)
+                _id: new mongoose.Types.ObjectId(playlistId)
             }
         },
         {
@@ -95,6 +95,27 @@ const getPlaylistById = asyncHandler(async (req, res) => {
             }
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "owner",        // playlist.owner
+                foreignField: "_id",        // user's _id
+                as: "playlistOwner",
+
+                pipeline: [
+                    {
+                        $project: {
+                            username: 1,
+                            fullName: 1,
+                            avatar: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $unwind: "$playlistOwner"
+        },
+        {
             $addFields: {
                 videoCount: { $size: "$video" },
                 totalViews: { $sum: "$video.views" }
@@ -105,9 +126,9 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                 name: 1,
                 description: 1,
 
-                username: "$video.channel.username",
-                fullName: "$video.channel.fullName",
-                avatar: "$video.channel.avatar",
+                username: "$playlistOwner.username",
+                fullName: "$playlistOwner.fullName",
+                avatar: "$playlistOwner.avatar",
 
                 video: 1,
 
@@ -148,7 +169,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(404, "playlist not found")
     }
 
-    if(!playlist.owner.equals(req.user._id)){
+    if (!playlist.owner.equals(req.user._id)) {
         throw new ApiError(401, "Unauthorized Access")
     }
 
@@ -187,7 +208,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         throw new ApiError(404, "playlist not found")
     }
 
-    if(!playlist.owner.equals(req.user._id)){
+    if (!playlist.owner.equals(req.user._id)) {
         throw new ApiError(401, "Unauthorized Access")
     }
 
@@ -201,7 +222,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
         }
     }
 
-    if(!Exists){
+    if (!Exists) {
         throw new ApiError(400, "Video doesnot exists")
     }
 
@@ -227,7 +248,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 
     const playlist = await Playlist.findById(playlistId);
 
-    if(!playlist.owner.equals(req.user._id)){
+    if (!playlist.owner.equals(req.user._id)) {
         throw new ApiError(401, "Unauthorized Access")
     }
 
@@ -247,10 +268,10 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 })
 
 //update playlist
-const updatePlaylist = asyncHandler(async (req, res) => {   
+const updatePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params
     const { name, description } = req.body
-    
+
     if (!playlistId || !mongoose.Types.ObjectId.isValid(playlistId)) {
         throw new ApiError(400, "Invalid playlist id")
     }
@@ -260,28 +281,28 @@ const updatePlaylist = asyncHandler(async (req, res) => {
 
     const userCheck = await Playlist.findById(playlistId);
 
-    if(!userCheck.owner.equals(req.user._id)){
+    if (!userCheck.owner.equals(req.user._id)) {
         throw new ApiError(401, "Unauthorized Access")
     }
 
     const playlist = await Playlist.findByIdAndUpdate(playlistId, {
-        $set : {
-            name, 
+        $set: {
+            name,
             description
         }
     },
-    {new : true}
+        { new: true }
     )
 
-    if(!playlist){
+    if (!playlist) {
         throw new ApiError(500, "Error while updating")
     }
 
     return res
-    .status(200)
-    .json(
-        new ApiResponse(200,playlist,"Playlist updated successfully")
-    )
+        .status(200)
+        .json(
+            new ApiResponse(200, playlist, "Playlist updated successfully")
+        )
 
 })
 
