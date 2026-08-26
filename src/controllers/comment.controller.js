@@ -129,7 +129,7 @@ const deleteComment = asyncHandler(async (req, res) => {
         throw new ApiError(400,"Invalid or missing commment Id")
     }
 
-    const commentUser = await findById(commentId);
+    const commentUser = await Comment.findById(commentId);
 
     if(!commentUser){
         throw new ApiError(404, "comment not found")

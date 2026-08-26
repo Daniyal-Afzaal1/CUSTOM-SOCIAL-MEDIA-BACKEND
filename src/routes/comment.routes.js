@@ -18,4 +18,4 @@ router.route("/update/:commentId").patch(verifyJWT,updateComment);
 router.route("/delete/:commentId").delete(verifyJWT,deleteComment);
 
 
-export default router;
+export default router; 
