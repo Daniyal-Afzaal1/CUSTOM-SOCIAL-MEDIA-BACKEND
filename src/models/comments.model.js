@@ -21,4 +21,4 @@ const commentsSchema = new mongoose.Schema({
 
 commentsSchema.plugin(mongooseAggregatePaginate); //before export so model can have the plugin abilities to perform aggregation pipeline operations        
 
-export const Comment = mongoose.model("Comment", commentsSchema); 
+export const Comment = mongoose.model("Comment", commentsSchema);  

@@ -50,4 +50,4 @@ router.route("/c/:username").get(verifyJWT, get_user_channel_profile); //get use
 
 router.route("/history").get(verifyJWT, get_watch_history); //get watch history
 
-export default router; //with default in export, in import we can give it any name we want
+export default router; //with default in export, in import we can give it any name we want 

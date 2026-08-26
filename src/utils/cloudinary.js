@@ -49,4 +49,4 @@ const delete_from_cloudinary = async function(public_id, resource_type = "image"
 };
 
 
-export {uploadOnCloudinary, delete_from_cloudinary};
+export {uploadOnCloudinary, delete_from_cloudinary}; 

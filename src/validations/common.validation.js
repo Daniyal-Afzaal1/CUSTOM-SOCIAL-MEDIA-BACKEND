@@ -7,4 +7,4 @@ function isEmailCorrect(email){
     return regexEmail.test(email);
 }
 
-export {isEmpty,isEmailCorrect} 
+export {isEmpty,isEmailCorrect}  
