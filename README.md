@@ -1,4 +1,4 @@
-# VideoTube — Social Media Backend (YouTube + Twitter)
+# Social Media Backend (YouTube + Twitter)
 
 A production-style backend that fuses **YouTube-like video hosting** with **Twitter-like short-form posts** into a single social platform. Built with Node.js, Express, and MongoDB, it covers everything a modern social app needs: auth, video uploads, tweets, comments, likes, subscriptions, playlists, and a creator dashboard.
 
