@@ -26,4 +26,4 @@ router.route("/delete/:playlistId").delete(verifyJWT,deletePlaylist);
 
 router.route("/update/:playlistId").patch(verifyJWT,updatePlaylist);
 
-export default router;
+export default router; 
